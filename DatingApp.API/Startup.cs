@@ -38,6 +38,7 @@ namespace DatingApp.API
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddCors(); /* cross origin */
             services.AddScoped<IAuthRepository,AuthRepository>();
+            /* token authentication jwt bearer */
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer((options => {
                 options.TokenValidationParameters = new TokenValidationParameters {
                     ValidateIssuerSigningKey = true,
