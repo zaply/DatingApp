@@ -51,7 +51,7 @@ namespace DatingApp.API.Migrations
 
                     b.Property<string>("Country");
 
-                    b.Property<DateTime>("CreatedAd");
+                    b.Property<DateTime>("CreatedAt");
 
                     b.Property<DateTime>("DateOfBirth");
 

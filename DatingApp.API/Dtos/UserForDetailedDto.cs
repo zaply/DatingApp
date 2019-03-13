@@ -11,7 +11,7 @@ namespace DatingApp.API.Dtos
       public string Sesso { get; set; }
       public int Age { get; set; }
       public string KnowAs { get; set; }
-      public DateTime CreatedAd { get; set; }
+      public DateTime CreatedAt { get; set; }
       public DateTime LastLogin { get; set; }
       public string LookingFor { get; set; }
       public string Introduction { get; set; }

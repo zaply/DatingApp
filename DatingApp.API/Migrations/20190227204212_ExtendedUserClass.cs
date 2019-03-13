@@ -103,7 +103,7 @@ namespace DatingApp.API.Migrations
                 table: "Users");
 
             migrationBuilder.DropColumn(
-                name: "CreatedAd",
+                name: "CreatedAt",
                 table: "Users");
 
             migrationBuilder.DropColumn(
