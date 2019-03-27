@@ -61,7 +61,7 @@ namespace DatingApp.API.Migrations
 
                     b.Property<string>("KnowAs");
 
-                    b.Property<DateTime>("LastLogin");
+                    b.Property<DateTime>("LastActive");
 
                     b.Property<string>("LookingFor");
 
