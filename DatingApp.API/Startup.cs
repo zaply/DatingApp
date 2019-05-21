@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -34,6 +35,39 @@ namespace DatingApp.API
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
+        {
+            // read configuration from appsettings.json
+            // remember that appsettings.Development configuration overwrite appsettings
+            // Configuration.Get[PropertyName]("KeyName")
+            // Get[ConnectionString] -> read property [ConnectionStrings] (important then final s in json)
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+                             .AddJsonOptions( opt => { 
+                                 opt.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore; 
+                             }); 
+            services.AddDbContext<DataContext>(x => 
+                x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
+                 .ConfigureWarnings(warnings => warnings.Ignore(CoreEventId.IncludeIgnoredWarning)));     
+            services.BuildServiceProvider().GetService<DataContext>().Database.Migrate(); /* publish to AZURE */                 
+            services.AddCors(); /* cross origin */
+            services.AddAutoMapper();
+            services.Configure<CloudinarySettings>(Configuration.GetSection("CloudinarySettings"));
+            services.AddTransient<Seed>();
+            services.AddScoped<IAuthRepository,AuthRepository>();
+            services.AddScoped<IDatingRepository,DatingRepository>();
+            /* token authentication jwt bearer */
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer((options => {
+                options.TokenValidationParameters = new TokenValidationParameters {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII
+                        .GetBytes(Configuration.GetSection("AppSettings:Token").Value)),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
+            }));
+            services.AddScoped<LogUserActivity>();
+        }
+
+        public void ConfigureDevelopmentServices(IServiceCollection services)
         {
             // read configuration from appsettings.json
             // remember that appsettings.Development configuration overwrite appsettings
@@ -90,11 +124,19 @@ namespace DatingApp.API
             }
 
             //app.UseHttpsRedirection();
-            //seeder.SeedUsers();/* popolo database */
+            seeder.SeedUsers();/* popolo database */
 
             app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             app.UseAuthentication();
+            app.UseDefaultFiles(); /* wwwroot */
+            app.UseStaticFiles(); /* angular build file */
             app.UseMvc();
+            /* app.UseMvc( routes => {
+                routes.MapSpaFallbackRoute(
+                    name: "spa-fallback",
+                    defaults: new { controller = "Fallback", action = "Index" }  
+                );
+            });*/
         }
     }
 }
